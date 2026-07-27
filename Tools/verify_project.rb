@@ -151,6 +151,22 @@ check("#{APP} Info.plist enables the remote-notification background mode") do
   read_text(File.join(ROOT, APP, 'Info.plist')).include?('remote-notification')
 end
 
+# A hardcoded `development` here is invisible in every simulator build and in every Debug
+# device build. It only bites in TestFlight, where the device registers a SANDBOX token
+# while NotificationManager.apnsEnvironment reports "production" -- the Edge Function then
+# posts to the production APNs host, gets BadDeviceToken, and push is silently dead for
+# every real user.
+check("#{APP} drives aps-environment from a build setting, not a hardcoded string") do
+  read_text(File.join(ROOT, APP, "#{APP}.entitlements")).include?('$(APS_ENVIRONMENT)')
+end
+check("#{APP} sets APS_ENVIRONMENT development in Debug and production in Release") do
+  configurations = targets[APP].build_configurations
+  configurations.length == 2 && configurations.all? do |configuration|
+    expected = configuration.name == 'Debug' ? 'development' : 'production'
+    configuration.build_settings['APS_ENVIRONMENT'] == expected
+  end
+end
+
 puts "\nShared contract compiled into all three targets, exactly once each"
 SHARED_CONTRACT.each do |file|
   path = File.expand_path(File.join(ROOT, 'Shared', file))

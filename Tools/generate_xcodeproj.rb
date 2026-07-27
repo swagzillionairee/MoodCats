@@ -244,9 +244,17 @@ PER_TARGET = {
       # gets sandbox APNs tokens; Release gets production.
       settings['SWIFT_ACTIVE_COMPILATION_CONDITIONS'] = 'DEBUG $(inherited)'
       settings['SWIFT_OPTIMIZATION_LEVEL'] = '-Onone'
+      # The aps-environment entitlement has to agree with the line above, so it is driven
+      # from here rather than hardcoded in the .entitlements file. Hardcoding
+      # `development` means a TestFlight build registers a SANDBOX token while
+      # apnsEnvironment reports "production" -- the Edge Function then posts it to the
+      # production APNs host, gets BadDeviceToken, and push dies silently for every real
+      # user with nothing in the logs pointing at the cause.
+      settings['APS_ENVIRONMENT'] = 'development' if name == APP
     else
       settings['SWIFT_OPTIMIZATION_LEVEL'] = '-O'
       settings['SWIFT_COMPILATION_MODE'] = 'wholemodule'
+      settings['APS_ENVIRONMENT'] = 'production' if name == APP
     end
   end
 end
