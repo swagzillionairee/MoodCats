@@ -7,6 +7,7 @@
 # them are structural and checkable here, so they are checked here rather than discovered
 # on a locked phone at 2am:
 #
+#   - the base configuration actually resolves, so the settings it defines are not empty
 #   - the App Group entitlement is on ALL THREE targets (Xcode will not warn you)
 #   - the shared contract files are compiled into all three targets, not duplicated
 #   - the widget and the NSE do not link Supabase, so they cannot make a network call
@@ -47,6 +48,17 @@ WIDGET = 'MoodCatsWidget'
 NSE = 'MoodCatsNotificationService'
 SHARED_CONTRACT = %w[Config.swift Mood.swift RosterContract.swift RosterStore.swift].freeze
 
+# App and widget only. Mirrors SHARED_UI in Tools/generate_xcodeproj.rb: the NSE runs under
+# a 24 MB cap and renders nothing, so the SwiftUI layer is deliberately kept out of it.
+SHARED_UI = %w[CatFaceView.swift].freeze
+
+XCCONFIG = 'Config/Signing.xcconfig'
+
+# Settings the xcconfig must define. If the base configuration fails to resolve these
+# expand to empty rather than erroring, so the bundle id silently becomes ".moodcats" and
+# the App Group entitlement becomes <string></string>.
+XCCONFIG_SETTINGS = %w[BUNDLE_ID_PREFIX APP_GROUP_ID].freeze
+
 @failures = []
 @checks = 0
 
@@ -64,6 +76,20 @@ rescue StandardError => e
   @failures << description
 end
 
+# How many build files in this target resolve to exactly this path.
+#
+# Compares absolute paths rather than testing a suffix. A suffix test cannot tell
+# <ROOT>/Shared/Config.swift from a doubled <ROOT>/Shared/Shared/Config.swift -- the same
+# class of bug that made the base configuration point at Config/Config/Signing.xcconfig and
+# stopped the project building at all. Counting rather than using `any?` also catches a file
+# added to one target twice, which fails the link with "duplicate output file".
+def compile_count(target, absolute_path)
+  target.source_build_phase.files.count do |build_file|
+    reference = build_file.file_ref
+    reference && File.expand_path(reference.real_path.to_s) == absolute_path
+  end
+end
+
 targets = project.targets.to_h { |t| [t.name, t] }
 
 puts "\nTargets"
@@ -71,6 +97,31 @@ check('three targets exist') { targets.keys.sort == [APP, NSE, WIDGET].sort }
 check("#{APP} is an application") { targets[APP].product_type == 'com.apple.product-type.application' }
 check("#{WIDGET} is an app extension") { targets[WIDGET].product_type == 'com.apple.product-type.app-extension' }
 check("#{NSE} is an app extension") { targets[NSE].product_type == 'com.apple.product-type.app-extension' }
+
+puts "\nBase configuration (if this does not resolve, every setting below it is silently empty)"
+# This is the check that was missing when the base configuration pointed at
+# Config/Config/Signing.xcconfig -- a path that does not exist. xcodebuild failed at
+# project-load, so no Swift was ever compiled, and this script still printed
+# "Project is structurally sound". Xcodeproj resolves a reference relative to its group, so
+# a path that already includes the group's own directory silently doubles it.
+check("the project base configuration resolves to #{XCCONFIG}") do
+  expected = File.expand_path(File.join(ROOT, XCCONFIG))
+  configurations = project.build_configurations
+  !configurations.empty? && configurations.all? do |configuration|
+    reference = configuration.base_configuration_reference
+    !reference.nil? &&
+      File.expand_path(reference.real_path.to_s) == expected &&
+      File.exist?(reference.real_path)
+  end
+end
+# The entitlements checks below only grep for the literal text "$(APP_GROUP_ID)"; they
+# cannot tell whether that variable expands to anything. This is what gives them teeth.
+check("#{XCCONFIG} defines #{XCCONFIG_SETTINGS.join(' and ')}") do
+  contents = read_text(File.join(ROOT, XCCONFIG))
+  # [ \t] rather than \s: Ruby's \s matches newlines, so \s*\S would happily skip a blank
+  # value and match the next line, making "APP_GROUP_ID =" look defined.
+  XCCONFIG_SETTINGS.all? { |setting| contents.match?(/^[ \t]*#{setting}[ \t]*=[ \t]*\S/) }
+end
 
 puts "\nApp Group entitlement (the classic 'why is my widget always empty' bug)"
 [APP, WIDGET, NSE].each do |name|
@@ -100,15 +151,21 @@ check("#{APP} Info.plist enables the remote-notification background mode") do
   read_text(File.join(ROOT, APP, 'Info.plist')).include?('remote-notification')
 end
 
-puts "\nShared contract compiled into all three targets"
+puts "\nShared contract compiled into all three targets, exactly once each"
 SHARED_CONTRACT.each do |file|
+  path = File.expand_path(File.join(ROOT, 'Shared', file))
   [APP, WIDGET, NSE].each do |name|
-    check("#{name} compiles Shared/#{file}") do
-      targets[name].source_build_phase.files.any? do |build_file|
-        build_file.file_ref&.real_path.to_s.end_with?("Shared/#{file}")
-      end
-    end
+    check("#{name} compiles Shared/#{file} exactly once") { compile_count(targets[name], path) == 1 }
   end
+end
+
+puts "\nShared SwiftUI stays out of the 24 MB Notification Service Extension"
+SHARED_UI.each do |file|
+  path = File.expand_path(File.join(ROOT, 'Shared', file))
+  [APP, WIDGET].each do |name|
+    check("#{name} compiles Shared/#{file} exactly once") { compile_count(targets[name], path) == 1 }
+  end
+  check("#{NSE} does NOT compile Shared/#{file}") { compile_count(targets[NSE], path).zero? }
 end
 
 puts "\nCat faces (kaomoji, not images)"

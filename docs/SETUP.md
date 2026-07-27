@@ -233,7 +233,7 @@ to break.
 | Deep link | `moodcats://friend/<profile uuid>` |
 
 ```bash
-ruby Tools/verify_project.rb      # 61 structural checks, run after touching the project
+ruby Tools/verify_project.rb      # 66 structural checks, run after touching the project
 ruby Tools/generate_xcodeproj.rb  # regenerate the project after adding a source file
 python3 Tools/make_catalogs.py    # regenerate the asset catalogs and app icon
 ```

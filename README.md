@@ -24,7 +24,7 @@ Built to [MoodCats Technical Specification v1.0](#).
 **Nothing here has been run on an iPhone.** This was built in a Linux container with no
 Xcode, no Swift toolchain and no iOS SDK, so the Swift compiles in theory and not yet in
 practice. Everything that *could* be verified without hardware was:
-`ruby Tools/verify_project.rb` runs 61 structural checks, and the backend was exercised
+`ruby Tools/verify_project.rb` runs 66 structural checks, and the backend was exercised
 against the real project over real HTTP.
 
 ---
@@ -183,7 +183,7 @@ one, and new members show up in the widget's friend picker without an app launch
 ## Things that will silently break this
 
 Spec section 16, plus what testing actually found. Most are enforced by
-`ruby Tools/verify_project.rb` (61 checks) — run it after touching the project.
+`ruby Tools/verify_project.rb` (66 checks) — run it after touching the project.
 
 1. The App Group entitlement must be on **all three** targets. Xcode will not warn you.
 2. No RLS policy on `profiles` may subquery `profiles`. Use `current_group_id()`.
