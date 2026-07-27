@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 220" width="220" height="220">
+  <title>MoodCats -- hungry</title>
+  <g fill="none" stroke="#000000" stroke-width="7.5"
+     stroke-linecap="round" stroke-linejoin="round">
+
+  <!-- ears -->
+  <path d="M 62 62 L 50 18 L 96 42" />
+  <path d="M 158 62 L 170 18 L 124 42" />
+  <!-- head -->
+  <ellipse cx="110" cy="86" rx="62" ry="55" />
+  <!-- torso -->
+  <path d="M 66 128 C 48 158 46 192 60 203" />
+  <path d="M 154 128 C 172 158 174 192 160 203" />
+  <path d="M 60 203 L 160 203" />
+  <!-- front paws -->
+  <path d="M 82 203 C 82 190 98 190 98 203" />
+  <path d="M 122 203 C 122 190 138 190 138 203" />
+  <!-- tail -->
+  <path d="M 160 196 C 196 196 204 168 188 152 C 180 144 168 148 170 158" />
+  <!-- nose -->
+  <path d="M 103 99 L 117 99 L 110 107 Z" />
+
+  <g stroke-width="5.5">
+    <path d="M 44 92 L 76 96" />
+    <path d="M 44 106 L 76 104" />
+    <path d="M 176 92 L 144 96" />
+    <path d="M 176 106 L 144 104" />
+  </g>
+
+  <circle cx="86" cy="84" r="8" />
+  <circle cx="134" cy="84" r="8" />
+  <path d="M 94 108 C 100 104 120 104 126 108 C 126 124 94 124 94 108 Z" />
+  <path d="M 110 126 C 105 134 105 141 110 141 C 115 141 115 134 110 126 Z" />
+  </g>
+</svg>

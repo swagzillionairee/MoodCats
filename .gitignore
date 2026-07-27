@@ -1,0 +1,38 @@
+# ---------------------------------------------------------------------------------------
+# Secrets. Nothing in this block may ever be committed.
+# ---------------------------------------------------------------------------------------
+*.p8
+Scripts/.env
+.env
+.env.*
+!.env.example
+
+# ---------------------------------------------------------------------------------------
+# Xcode
+# ---------------------------------------------------------------------------------------
+xcuserdata/
+*.xcuserstate
+*.xcworkspace/xcuserdata/
+DerivedData/
+build/
+*.moved-aside
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# Resolved SPM versions live in the project; the checkout itself does not.
+.swiftpm/
+Packages/
+*.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/configuration/
+
+# ---------------------------------------------------------------------------------------
+# Tooling
+# ---------------------------------------------------------------------------------------
+.DS_Store
+node_modules/
+__pycache__/
+*.pyc
+
+# Generated previews for the cat art. Regenerate with Tools/make_cat_art.py.
+Art/preview/

@@ -1,0 +1,58 @@
+name: Supabase keepalive
+
+# A free tier Supabase project pauses after 7 days with no activity, and a paused project
+# takes 20 to 30 seconds to wake. To a user that reads as "the app is broken"; to an App
+# Store reviewer it reads as a failed launch.
+#
+# This runs every three days -- comfortably inside the window, with room for a couple of
+# missed runs. It calls public.keepalive(), which returns now() and nothing else.
+#
+# Setup: add a repository secret named SUPABASE_ANON_KEY. It is the same publishable key
+# that ships in Shared/Config.swift, so it is not really a secret, but keeping it out of
+# the workflow file means rotating it is a one-place change.
+#
+# NOTE: GitHub disables scheduled workflows on repositories with no activity for 60 days.
+# If the repo goes quiet, re-enable it from the Actions tab.
+
+on:
+  schedule:
+    - cron: '17 6 */3 * *'
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Call keepalive
+        env:
+          SUPABASE_URL: https://zewojsliyfgmraoxgndc.supabase.co
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          set -euo pipefail
+          if [ -z "${SUPABASE_ANON_KEY}" ]; then
+            echo "::error::SUPABASE_ANON_KEY repository secret is not set."
+            exit 1
+          fi
+
+          # Retry: a project that has ALREADY paused takes 20-30s to wake, so the first
+          # call is expected to be slow or to fail outright.
+          for attempt in 1 2 3; do
+            status=$(curl -sS -o /tmp/body -w '%{http_code}' --max-time 60 \
+              -X POST "${SUPABASE_URL}/rest/v1/rpc/keepalive" \
+              -H "apikey: ${SUPABASE_ANON_KEY}" \
+              -H "Authorization: Bearer ${SUPABASE_ANON_KEY}" \
+              -H 'Content-Type: application/json' \
+              -d '{}') || status=000
+
+            if [ "$status" = "200" ]; then
+              echo "awake at $(cat /tmp/body)"
+              exit 0
+            fi
+
+            echo "attempt ${attempt}: HTTP ${status} $(cat /tmp/body 2>/dev/null || true)"
+            sleep $((attempt * 15))
+          done
+
+          echo "::error::Project did not respond after 3 attempts."
+          exit 1

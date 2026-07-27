@@ -1,0 +1,34 @@
+// MoodCats signing and identity.
+//
+// This is the one file you edit to make the project yours. It is the base configuration
+// for the whole project, so all three targets pick it up.
+//
+// ---------------------------------------------------------------------------
+// 1. DEVELOPMENT_TEAM -- your 10 character Apple Developer Team ID.
+//    Find it at developer.apple.com > Membership, or in Xcode >
+//    Settings > Accounts > (your account) > Team ID.
+//    Leave it blank and Xcode will ask you to pick a team the first time you build.
+// ---------------------------------------------------------------------------
+DEVELOPMENT_TEAM =
+
+// ---------------------------------------------------------------------------
+// 2. BUNDLE_ID_PREFIX -- the reverse-DNS prefix for all three bundle ids.
+//
+//    Changing this changes, automatically:
+//      com.huydao.moodcats                      (app)
+//      com.huydao.moodcats.widget               (widget extension)
+//      com.huydao.moodcats.notificationservice  (notification service extension)
+//      group.com.huydao.moodcats                (App Group, via APP_GROUP_ID below)
+//
+//    It does NOT change Shared/Config.swift, which hardcodes the same strings so the
+//    runtime can reference them. If you change the prefix here, change it there too --
+//    the App Group id in particular must match exactly or the widget renders empty and
+//    Xcode will not warn you.
+// ---------------------------------------------------------------------------
+BUNDLE_ID_PREFIX = com.huydao
+
+APP_GROUP_ID = group.$(BUNDLE_ID_PREFIX).moodcats
+
+// The APNs topic the Edge Function posts to is the MAIN app bundle id, not the widget's.
+// Set APNS_BUNDLE_ID in the Supabase Edge Function secrets to match this.
+APP_BUNDLE_ID = $(BUNDLE_ID_PREFIX).moodcats
