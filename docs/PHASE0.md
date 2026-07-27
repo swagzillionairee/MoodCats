@@ -51,16 +51,18 @@ onboarding run.
 
 ### 3. Grab each device token
 
-`AppDelegate` logs it on every launch:
+`AppDelegate` logs it on every launch, and DEBUG builds log the hex itself:
 
 ```
 APNs token registered (sandbox).
+APNs device token: 8f3a...
 ```
 
-The token itself goes to the database, so for the spike read it from the Xcode console by
-adding a temporary `print(hex)` in `didRegisterForRemoteNotificationsWithDeviceToken`, or
-read it out of Console.app. It is 64 hex characters. **Copy the hex, not the debugger's
-`<32 bytes>` form.**
+No temporary `print` is needed -- the second line is already there, marked
+`privacy: .public` so it is not redacted to `<private>`, and compiled out of Release so a
+real user's token never lands in a log. Read it from the Xcode console or from Console.app
+filtered by `com.huydao.moodcats`. It is 64 hex characters. **Copy the hex, not the
+debugger's `<32 bytes>` form.**
 
 ### 4. Add a widget on device B
 
