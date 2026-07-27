@@ -9,7 +9,7 @@
 //    Settings > Accounts > (your account) > Team ID.
 //    Leave it blank and Xcode will ask you to pick a team the first time you build.
 // ---------------------------------------------------------------------------
-DEVELOPMENT_TEAM =
+DEVELOPMENT_TEAM =3GA6P4BDKR
 
 // ---------------------------------------------------------------------------
 // 2. BUNDLE_ID_PREFIX -- the reverse-DNS prefix for all three bundle ids.
