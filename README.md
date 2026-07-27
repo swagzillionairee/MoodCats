@@ -31,6 +31,8 @@ against the real project over real HTTP.
 
 ## Do these first
 
+**Full click-by-click walkthrough: [docs/SETUP.md](docs/SETUP.md).** Summary below.
+
 Five things block a first build. Three are Apple, one is Supabase, one is a paste.
 
 ### 1. Enable anonymous sign-ins (Supabase) — **hard blocker**
@@ -136,7 +138,7 @@ supabase/
 
 Tools/                      project generation, asset catalogs, verification
 Scripts/                    Phase 0 spike, demo group seed
-docs/                       Phase 0 procedure, test matrix
+docs/                       setup walkthrough, Phase 0 procedure, test matrix
 ```
 
 ### The three files that must agree

@@ -27,6 +27,13 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
         let environment = NotificationManager.apnsEnvironment
         log.info("APNs token registered (\(environment, privacy: .public)).")
 
+        #if DEBUG
+        // Phase 0 needs this hex to aim Scripts/push_spike.sh at the device. Marked
+        // public so it is readable in Console.app rather than redacted to <private>,
+        // and compiled out of Release so a real user's token never lands in a log.
+        log.info("APNs device token: \(hex, privacy: .public)")
+        #endif
+
         Task {
             do {
                 try await SupabaseService.shared.registerDeviceToken(hex, environment: environment)
