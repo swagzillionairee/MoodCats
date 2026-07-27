@@ -85,7 +85,7 @@ public struct RosterMember: Codable, Sendable, Identifiable, Equatable, Hashable
     /// neutral cat rather than guessing.
     public var mood: Mood? { Mood.known(m) }
 
-    public var moodAssetName: String { mood?.assetName ?? Mood.placeholderAssetName }
+    public var moodFace: String { Mood.face(for: mood) }
 
     public var updatedAt: Date { Date(timeIntervalSince1970: Double(at) / 1000) }
 }

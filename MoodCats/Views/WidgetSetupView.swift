@@ -186,8 +186,7 @@ private struct StepView: View {
 
     private var widgetPreview: some View {
         VStack(spacing: 4) {
-            CatArtView(assetName: Mood.sleepy.assetName)
-                .frame(width: 44, height: 44)
+            CatFaceView(mood: .sleepy, size: 17)
                 .foregroundStyle(.tint)
             Text("Kim").font(.system(size: 10, weight: .semibold))
         }

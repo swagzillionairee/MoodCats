@@ -111,26 +111,55 @@ SHARED_CONTRACT.each do |file|
   end
 end
 
-puts "\nCat art available to app and widget"
-[APP, WIDGET].each do |name|
-  check("#{name} bundles Shared/CatAssets.xcassets") do
-    targets[name].resources_build_phase.files.any? do |build_file|
-      build_file.file_ref&.real_path.to_s.end_with?('Shared/CatAssets.xcassets')
-    end
-  end
+puts "\nCat faces (kaomoji, not images)"
+FACE_MOODS = %w[happy sad sleepy angry anxious chill excited hungry].freeze
+mood_source = read_text(File.join(ROOT, 'Shared/Mood.swift'))
+faces = mood_source[/public var face: String \{.*?\n    \}/m].to_s.scan(/case \.(\w+): "([^"]+)"/).to_h
+placeholder = mood_source[/placeholderFace = "([^"]+)"/, 1]
+
+check('all 8 moods define a face') { FACE_MOODS.all? { |m| faces[m] && !faces[m].empty? } }
+check('a neutral placeholder face exists') { !placeholder.nil? && !placeholder.empty? }
+check('every face is visually distinct') { (faces.values + [placeholder]).uniq.length == 9 }
+check('every face keeps the (= =) frame and the omega muzzle') do
+  (faces.values + [placeholder]).all? { |f| f.start_with?('(=') && f.end_with?('=)') && f.include?("\u03C9") }
 end
-%w[happy sad sleepy angry anxious chill excited hungry unknown].each do |mood|
-  check("cat_#{mood}.pdf exists and is a vector PDF") do
-    path = File.join(ROOT, 'Shared/CatAssets.xcassets', "cat_#{mood}.imageset", "cat_#{mood}.pdf")
-    File.exist?(path) && File.read(path, 5) == '%PDF-'
+check('faces differ ONLY in the eyes, never in the frame') do
+  (faces.values + [placeholder]).map { |f| [f[0, 2], f[-2, 2], f.length] }.uniq.length == 1
+end
+
+# Anything outside these blocks risks tofu on a device whose font fallback differs, and
+# Arabic-range characters would drag bidirectional layout into a Lock Screen widget.
+SAFE_RANGES = [
+  (0x20..0x7E),     # ASCII
+  (0xA0..0xFF),     # Latin-1 Supplement
+  (0x370..0x3FF),   # Greek (the omega muzzle)
+  (0x2600..0x26FF), # Misc Symbols (star eyes)
+  (0x25A0..0x25FF)  # Geometric Shapes (round eyes)
+].freeze
+check('faces use only fonts-guaranteed characters (no Arabic, Thai or rare CJK)') do
+  offenders = (faces.values + [placeholder]).flat_map(&:chars).uniq.reject do |c|
+    SAFE_RANGES.any? { |r| r.cover?(c.ord) }
   end
-  check("cat_#{mood} is template rendered with vector data preserved") do
-    json = JSON.parse(read_text(File.join(ROOT, 'Shared/CatAssets.xcassets', "cat_#{mood}.imageset", 'Contents.json')))
-    properties = json['properties'] || {}
-    properties['preserves-vector-representation'] == true &&
-      properties['template-rendering-intent'] == 'template' &&
-      json['images'].first['filename'] == "cat_#{mood}.pdf"
-  end
+  puts "        offending characters: #{offenders.map { |c| format('%s U+%04X', c, c.ord) }}" unless offenders.empty?
+  offenders.empty?
+end
+
+check('no image-based cat assets remain anywhere') do
+  Dir.glob(File.join(ROOT, '**/cat_*.{pdf,png,svg}')).empty? &&
+    !Dir.exist?(File.join(ROOT, 'Shared/CatAssets.xcassets'))
+end
+check('no source still references an image asset name') do
+  swift_all = Dir.glob(File.join(ROOT, '{Shared,MoodCats,MoodCatsWidget,MoodCatsNotificationService}/**/*.swift'))
+  swift_all.none? { |f| read_code(f).match?(/assetName|CatArtView|placeholderAssetName/) }
+end
+check('the app icon is 1024x1024 with no alpha channel') do
+  path = File.join(ROOT, 'MoodCats/Assets.xcassets/AppIcon.appiconset/AppIcon.png')
+  next false unless File.exist?(path)
+  header = File.binread(path, 26)
+  width = header[16, 4].unpack1('N')
+  height = header[20, 4].unpack1('N')
+  colour_type = header[25].ord
+  width == 1024 && height == 1024 && colour_type == 2 # 2 = truecolour, no alpha
 end
 
 puts "\nNetwork isolation"

@@ -130,9 +130,9 @@ private struct MemberRow: View {
 
     var body: some View {
         HStack(spacing: 14) {
-            CatArtView(mood: member.mood)
-                .frame(width: 44, height: 44)
+            CatFaceView(mood: member.mood, size: 20)
                 .foregroundStyle(.tint)
+                .frame(minWidth: 78, alignment: .leading)
 
             VStack(alignment: .leading, spacing: 3) {
                 HStack(spacing: 6) {

@@ -42,11 +42,12 @@ struct HomeView: View {
 
     private var header: some View {
         VStack(spacing: 10) {
-            CatArtView(mood: model.myMood)
-                .frame(width: 110, height: 110)
+            CatFaceView(mood: model.myMood, size: 54, weight: .semibold)
                 .foregroundStyle(.tint)
                 .contentTransition(.opacity)
                 .animation(.snappy, value: model.myMood)
+                .accessibilityHidden(false)
+                .accessibilityLabel(model.myMood.map { "You're feeling \($0.label)" } ?? "No mood set")
 
             if let mood = model.myMood {
                 Text("You're feeling \(mood.label.lowercased())")
@@ -91,8 +92,7 @@ private struct MoodTile: View {
     var body: some View {
         Button(action: action) {
             VStack(spacing: 8) {
-                CatArtView(mood: mood)
-                    .frame(width: 56, height: 56)
+                CatFaceView(mood: mood, size: 24, weight: isSelected ? .semibold : .regular)
                     .foregroundStyle(isSelected ? Color.accentColor : .primary)
                 Text(mood.label)
                     .font(.caption.weight(isSelected ? .semibold : .regular))

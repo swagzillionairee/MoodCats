@@ -14,7 +14,7 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "27BE3988420581A82C7B9B63"
+               BlueprintIdentifier = "9056EA3A36FA25BAED0F493A"
                BuildableName = "MoodCats.app"
                BlueprintName = "MoodCats"
                ReferencedContainer = "container:MoodCats.xcodeproj">
@@ -30,7 +30,7 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "27BE3988420581A82C7B9B63"
+            BlueprintIdentifier = "9056EA3A36FA25BAED0F493A"
             BuildableName = "MoodCats.app"
             BlueprintName = "MoodCats"
             ReferencedContainer = "container:MoodCats.xcodeproj">
@@ -53,7 +53,7 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "27BE3988420581A82C7B9B63"
+            BlueprintIdentifier = "9056EA3A36FA25BAED0F493A"
             BuildableName = "MoodCats.app"
             BlueprintName = "MoodCats"
             ReferencedContainer = "container:MoodCats.xcodeproj">
@@ -70,7 +70,7 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "27BE3988420581A82C7B9B63"
+            BlueprintIdentifier = "9056EA3A36FA25BAED0F493A"
             BuildableName = "MoodCats.app"
             BlueprintName = "MoodCats"
             ReferencedContainer = "container:MoodCats.xcodeproj">

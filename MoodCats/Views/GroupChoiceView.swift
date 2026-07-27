@@ -13,8 +13,7 @@ struct GroupChoiceView: View {
             VStack(spacing: 24) {
                 Spacer()
 
-                CatArtView(assetName: Mood.excited.assetName)
-                    .frame(width: 120, height: 120)
+                CatFaceView(mood: .excited, size: 52)
                     .foregroundStyle(.tint)
 
                 VStack(spacing: 8) {

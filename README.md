@@ -18,13 +18,13 @@ Built to [MoodCats Technical Specification v1.0](#).
 | Supabase project, schema, RLS, 8 RPCs | **Done and verified** against the live project |
 | `set-mood` Edge Function | **Deployed**, verified end to end over HTTP |
 | Shared data contract, iOS app, widget, Notification Service Extension | **Written**, not yet compiled — needs Xcode |
-| Cat art (9 vector PDFs) | **Done**, placeholder grade |
+| Cat faces (kaomoji) | **Done** — text, no image assets anywhere |
 | Phase 0 push spike | **Tooling ready**, needs two physical devices |
 
 **Nothing here has been run on an iPhone.** This was built in a Linux container with no
 Xcode, no Swift toolchain and no iOS SDK, so the Swift compiles in theory and not yet in
 practice. Everything that *could* be verified without hardware was:
-`ruby Tools/verify_project.rb` runs 72 structural checks, and the backend was exercised
+`ruby Tools/verify_project.rb` runs 61 structural checks, and the backend was exercised
 against the real project over real HTTP.
 
 ---
@@ -120,8 +120,7 @@ Shared/                     compiled into ALL THREE targets
   Mood.swift                the 8 moods; ids are stable forever
   RosterContract.swift      the shared data contract (spec section 9)
   RosterStore.swift         App Group read/write, monotonic write rule
-  CatArtView.swift          app + widget only (the NSE does no image work)
-  CatAssets.xcassets        9 vector PDFs, template rendered
+  CatFaceView.swift         app + widget only (the NSE renders nothing)
 
 MoodCats/                   the app
   AppModel.swift            the whole state machine
@@ -135,7 +134,7 @@ supabase/
   migrations/               10 migrations, applied to the live project
   functions/set-mood/       the only metered code path
 
-Tools/                      project generation, art generation, verification
+Tools/                      project generation, asset catalogs, verification
 Scripts/                    Phase 0 spike, demo group seed
 docs/                       Phase 0 procedure, test matrix
 ```
@@ -182,7 +181,7 @@ one, and new members show up in the widget's friend picker without an app launch
 ## Things that will silently break this
 
 Spec section 16, plus what testing actually found. Most are enforced by
-`ruby Tools/verify_project.rb` (72 checks) — run it after touching the project.
+`ruby Tools/verify_project.rb` (61 checks) — run it after touching the project.
 
 1. The App Group entitlement must be on **all three** targets. Xcode will not warn you.
 2. No RLS policy on `profiles` may subquery `profiles`. Use `current_group_id()`.
@@ -225,8 +224,8 @@ ruby Tools/verify_project.rb
 # Regenerate the project after adding a source file
 ruby Tools/generate_xcodeproj.rb
 
-# Regenerate the cat art (one body, face-only variation)
-python3 Tools/make_cat_art.py
+# Regenerate the asset catalogs and the app icon (drawn from the happy face)
+python3 Tools/make_catalogs.py
 
 # Typecheck the Edge Function
 cd supabase/functions/set-mood && deno check index.ts
@@ -259,11 +258,12 @@ change now and expensive later:
 
 And two things deliberately left for a human:
 
-- **The cat art is placeholder grade.** It is structurally correct — one shared body, one
-  stroke weight, face-only variation across all 9, vector PDF, template rendered — and it
-  is drawn by code in `Tools/make_cat_art.py`, so it is consistent by construction rather
-  than by discipline. It is not *designed*. Replacing it means dropping new PDFs into
-  `Shared/CatAssets.xcassets/cat_*.imageset/` with the same filenames. No code changes.
-  Note that purely AI generated images are not copyrightable in the US.
-- **The app icon is a placeholder** rendered from the same cat. 1024×1024, RGB, no alpha,
-  so it will pass validation, but it is not a real icon.
+- **The cats are kaomoji, not art.** `(=^ω^=)`, `(=TωT=)`, and so on — the `(=` `=)`
+  frame and the `ω` muzzle are constant, only the eyes change. Changing one is a one-line
+  edit in `Shared/Mood.swift`; `Tools/verify_project.rb` then enforces that all nine stay
+  distinct, keep the shared frame, and use only characters guaranteed to render.
+  Deliberately avoided, despite being common in cat kaomoji: `ﻌ` (U+FECC) is an **Arabic**
+  letter and would drag bidirectional text resolution into a Lock Screen widget, and `ฅ`
+  / `ᴥ` depend on fonts that are not guaranteed and degrade to tofu boxes.
+- **The app icon is a placeholder**, drawn from the happy face. 1024×1024, RGB, no alpha,
+  so it will pass validation, but it is not a designed icon.

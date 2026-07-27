@@ -6,9 +6,9 @@ import WidgetKit
 /// **No state renders blank.** Unconfigured, no data, friend gone, normal and the gallery
 /// placeholder each get a designed view, in each family.
 ///
-/// The art is monochrome vector, template rendered, so Lock Screen vibrant mode -- which
-/// desaturates everything to monochrome -- costs nothing. Verify it on device anyway
-/// rather than assuming.
+/// The cats are kaomoji rather than images, so Lock Screen vibrant mode -- which
+/// desaturates everything to monochrome -- costs nothing, and there is no rasterisation
+/// to go soft at any size. Verify it on device anyway rather than assuming.
 struct MoodWidgetView: View {
     let entry: MoodEntry
 
@@ -39,10 +39,8 @@ struct MoodWidgetView: View {
     // MARK: - systemSmall
 
     private var small: some View {
-        VStack(spacing: 6) {
-            CatArtView(assetName: presentation.assetName)
-                .frame(maxWidth: 76, maxHeight: 76)
-                .foregroundStyle(.tint)
+        VStack(spacing: 10) {
+            CatFaceView(face: presentation.face, size: 27, weight: .medium)
 
             VStack(spacing: 1) {
                 Text(presentation.title)
@@ -62,17 +60,22 @@ struct MoodWidgetView: View {
         }
         .padding(.vertical, 4)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(presentation.accessibilityLabel)
     }
 
     // MARK: - accessoryCircular
 
+    /// The whole widget is about 22 points across, so this uses the compact face --
+    /// eyes and muzzle only, no `(=` `=)` frame.
     private var circular: some View {
         ZStack {
             AccessoryWidgetBackground()
-            CatArtView(assetName: presentation.assetName)
-                .padding(9)
+            CatFaceView(face: presentation.compactFace, size: 17, weight: .semibold)
+                .padding(3)
                 .widgetAccentable()
         }
+        .accessibilityElement(children: .ignore)
         .accessibilityLabel(presentation.accessibilityLabel)
     }
 
@@ -80,8 +83,7 @@ struct MoodWidgetView: View {
 
     private var rectangular: some View {
         HStack(spacing: 8) {
-            CatArtView(assetName: presentation.assetName)
-                .frame(width: 34, height: 34)
+            CatFaceView(face: presentation.face, size: 16, weight: .medium)
                 .widgetAccentable()
 
             VStack(alignment: .leading, spacing: 1) {
@@ -98,13 +100,15 @@ struct MoodWidgetView: View {
             Spacer(minLength: 0)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-        .accessibilityElement(children: .combine)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(presentation.accessibilityLabel)
     }
 
     // MARK: - State to pixels
 
     private struct Presentation {
-        let assetName: String
+        let face: String
+        let compactFace: String
         let title: String
         let subtitle: String?
         let accessibilityLabel: String
@@ -114,7 +118,8 @@ struct MoodWidgetView: View {
         switch entry.state {
         case .unconfigured:
             Presentation(
-                assetName: Mood.placeholderAssetName,
+                face: Mood.placeholderFace,
+                compactFace: Mood.placeholderCompactFace,
                 title: "Pick a friend",
                 subtitle: "Long press to choose",
                 accessibilityLabel: "No friend chosen. Long press to pick one."
@@ -122,7 +127,8 @@ struct MoodWidgetView: View {
 
         case .noData:
             Presentation(
-                assetName: Mood.placeholderAssetName,
+                face: Mood.placeholderFace,
+                compactFace: Mood.placeholderCompactFace,
                 title: "Open MoodCats",
                 subtitle: "Join a group to start",
                 accessibilityLabel: "Open MoodCats to join a group."
@@ -130,7 +136,8 @@ struct MoodWidgetView: View {
 
         case .friendGone(let name):
             Presentation(
-                assetName: Mood.placeholderAssetName,
+                face: Mood.placeholderFace,
+                compactFace: Mood.placeholderCompactFace,
                 title: name,
                 subtitle: "left the group",
                 accessibilityLabel: "\(name) left the group."
@@ -138,7 +145,8 @@ struct MoodWidgetView: View {
 
         case .normal(let name, let mood, let updatedAt, _, let isMe):
             Presentation(
-                assetName: mood?.assetName ?? Mood.placeholderAssetName,
+                face: Mood.face(for: mood),
+                compactFace: Mood.compactFace(for: mood),
                 title: isMe ? "\(name) (you)" : name,
                 subtitle: subtitle(for: mood, updatedAt: updatedAt),
                 accessibilityLabel: mood.map { "\(name) is feeling \($0.label)" } ?? name
@@ -146,7 +154,8 @@ struct MoodWidgetView: View {
 
         case .gallery(let name, let mood):
             Presentation(
-                assetName: mood.assetName,
+                face: mood.face,
+                compactFace: mood.compactFace,
                 title: name,
                 subtitle: mood.label,
                 accessibilityLabel: "\(name) is feeling \(mood.label)"
@@ -178,6 +187,7 @@ struct MoodWidgetView: View {
     MoodWidget()
 } timeline: {
     MoodEntry(date: .now, state: .normal(name: "Kim", mood: .sleepy, updatedAt: .now.addingTimeInterval(-400), id: "preview", isMe: false))
+    MoodEntry(date: .now, state: .normal(name: "Kim", mood: .excited, updatedAt: .now, id: "preview", isMe: false))
     MoodEntry(date: .now, state: .unconfigured)
     MoodEntry(date: .now, state: .noData)
     MoodEntry(date: .now, state: .friendGone(name: "Kim"))

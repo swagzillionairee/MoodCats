@@ -41,8 +41,7 @@ struct RootView: View {
 private struct LaunchView: View {
     var body: some View {
         VStack(spacing: 20) {
-            CatArtView(assetName: Mood.placeholderAssetName)
-                .frame(width: 120, height: 120)
+            CatFaceView(face: Mood.placeholderFace, size: 46)
                 .foregroundStyle(.tint)
             ProgressView()
         }

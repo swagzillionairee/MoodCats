@@ -14,8 +14,7 @@ struct JoinGroupView: View {
         VStack(spacing: 28) {
             Spacer()
 
-            CatArtView(assetName: Mood.chill.assetName)
-                .frame(width: 100, height: 100)
+            CatFaceView(mood: .chill, size: 44)
                 .foregroundStyle(.tint)
 
             Text("Enter the 6 character code")

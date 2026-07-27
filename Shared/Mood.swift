@@ -21,7 +21,7 @@ public enum Mood: Int, CaseIterable, Identifiable, Sendable, Codable {
 
     public var id: Int { rawValue }
 
-    /// Stable machine key. Also the suffix of the asset name.
+    /// Stable machine key.
     public var key: String {
         switch self {
         case .happy: "happy"
@@ -64,14 +64,71 @@ public enum Mood: Int, CaseIterable, Identifiable, Sendable, Codable {
         }
     }
 
-    /// Vector PDF in the asset catalog, template rendered.
-    public var assetName: String { "cat_\(key)" }
+    // MARK: - Faces
+    //
+    // The cat is a kaomoji, not an image. `(=` and `=)` are the ears and cheeks, `ω` is
+    // the muzzle, and **only the eyes change** -- the same "one body, face-only
+    // variation" rule the vector art followed, except now it is enforced by the string
+    // itself rather than by a drawing pipeline.
+    //
+    // Text beats art here for three reasons: it is resolution independent at every
+    // widget size for free, it is already monochrome so Lock Screen vibrant mode costs
+    // nothing, and the widget and notification extensions no longer need an asset
+    // catalog at all.
+    //
+    // CHARACTER SET, and why it is this narrow:
+    //   ( ) = ^ T -    ASCII
+    //   ò ó ° ¯ ·      Latin-1 Supplement
+    //   ω              Greek (U+03C9)
+    //   ★ ◕            Misc Symbols / Geometric Shapes
+    //
+    // Every one of those is in the iOS system font or its guaranteed fallback chain.
+    // Deliberately NOT used, despite being common in cat kaomoji:
+    //   ﻌ (U+FECC) is an ARABIC letter. It renders, but it drags bidirectional text
+    //     resolution into a widget layout, which is not a thing to discover on a Lock
+    //     Screen.
+    //   ฅ (U+0E05, Thai) and ᴥ (U+1D25) depend on fonts that are not guaranteed, and
+    //     degrade to tofu boxes rather than to something merely uglier.
 
-    /// The neutral cat. Used for every empty, unknown and placeholder widget state --
-    /// no widget state may ever render blank.
-    public static let placeholderAssetName = "cat_unknown"
+    /// The full face. Seven characters, near-constant width, so a mood change never
+    /// shifts the layout around it.
+    public var face: String {
+        switch self {
+        case .happy: "(=^ω^=)"
+        case .sad: "(=TωT=)"
+        case .sleepy: "(=-ω-=)"
+        case .angry: "(=òωó=)"
+        case .anxious: "(=°ω°=)"
+        case .chill: "(=¯ω¯=)"
+        case .excited: "(=★ω★=)"
+        case .hungry: "(=◕ω◕=)"
+        }
+    }
+
+    /// Eyes and muzzle only, for places too tight for the full frame -- principally
+    /// `.accessoryCircular`, where the whole widget is about 22 points across.
+    public var compactFace: String {
+        String(face.dropFirst(2).dropLast(2))
+    }
+
+    /// The neutral cat. Used for every empty, unknown and placeholder state -- no widget
+    /// state may ever render blank.
+    public static let placeholderFace = "(=·ω·=)"
+
+    /// Eyes and muzzle of the neutral cat.
+    public static let placeholderCompactFace = "·ω·"
 
     /// Tolerant lookup. A mood id from a newer client than this build should degrade to
-    /// the neutral cat rather than crash or silently render the wrong animal.
+    /// the neutral face rather than crash or silently show the wrong one.
     public static func known(_ id: Int) -> Mood? { Mood(rawValue: id) }
+
+    /// The face for a possibly-unknown mood id.
+    public static func face(for mood: Mood?) -> String {
+        mood?.face ?? placeholderFace
+    }
+
+    /// The compact face for a possibly-unknown mood id.
+    public static func compactFace(for mood: Mood?) -> String {
+        mood?.compactFace ?? placeholderCompactFace
+    }
 }

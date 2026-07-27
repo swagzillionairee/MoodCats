@@ -16,8 +16,7 @@ struct OnboardingView: View {
         VStack(spacing: 28) {
             Spacer()
 
-            CatArtView(assetName: Mood.happy.assetName)
-                .frame(width: 140, height: 140)
+            CatFaceView(mood: .happy, size: 56)
                 .foregroundStyle(.tint)
 
             VStack(spacing: 8) {

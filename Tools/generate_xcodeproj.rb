@@ -57,9 +57,9 @@ SHARED_ALL = %w[
   Shared/RosterStore.swift
 ].freeze
 
-# App and widget only. The Notification Service Extension runs under a 24 MB cap and does
-# no image work at all, so it does not need (or want) the SwiftUI art layer.
-SHARED_UI = %w[Shared/CatArtView.swift].freeze
+# App and widget only. The Notification Service Extension runs under a 24 MB cap and
+# renders nothing, so it does not need (or want) the SwiftUI layer.
+SHARED_UI = %w[Shared/CatFaceView.swift].freeze
 
 APP_SOURCES = %w[
   MoodCats/MoodCatsApp.swift
@@ -88,8 +88,10 @@ WIDGET_SOURCES = %w[
 
 NSE_SOURCES = %w[MoodCatsNotificationService/NotificationService.swift].freeze
 
-# The cat art. Shared by the app and the widget, from a single catalog.
-SHARED_RESOURCES = %w[Shared/CatAssets.xcassets].freeze
+# The cats are kaomoji rendered as text at runtime, so there is no shared art catalog.
+# Each target keeps only its own tiny catalog (app icon, accent colour, widget
+# background), added individually below.
+SHARED_RESOURCES = [].freeze
 
 groups = {}
 
