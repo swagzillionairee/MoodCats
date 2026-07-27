@@ -34,7 +34,9 @@ project = Xcodeproj::Project.new(PROJECT_PATH)
 # Base configuration: Config/Signing.xcconfig drives team id, bundle prefix and App Group.
 # ---------------------------------------------------------------------------------------
 config_group = project.new_group('Config', 'Config')
-xcconfig_ref = config_group.new_reference('Config/Signing.xcconfig')
+# Relative to the group, which is already `Config` -- passing the full path here is what
+# produces a `Config/Config/Signing.xcconfig` base configuration reference.
+xcconfig_ref = config_group.new_reference('Signing.xcconfig')
 project.build_configurations.each { |c| c.base_configuration_reference = xcconfig_ref }
 
 # ---------------------------------------------------------------------------------------
